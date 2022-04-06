@@ -232,6 +232,10 @@ graph<vertex> readGraphFromFile(char* fname, bool isSymmetric, bool mmap) {
 #endif
     }}
 
+    int *i_offset = (int *) offsets, *i_edge = (int *) edges;
+    vector<int> v_offset(i_offset, i_offset + n);
+    vector<int> v_edge(i_edge, i_edge + m);
+
   if(!isSymmetric) {
     uintT* tOffsets = newA(uintT,n);
     {parallel_for(long i=0;i<n;i++) tOffsets[i] = INT_T_MAX;}
@@ -250,7 +254,7 @@ graph<vertex> readGraphFromFile(char* fname, bool isSymmetric, bool mmap) {
 #endif
       }
       }}
-//    free(offsets);
+    free(offsets);
 
 #ifndef WEIGHTED
 #ifndef LOWMEM
@@ -306,12 +310,12 @@ graph<vertex> readGraphFromFile(char* fname, bool isSymmetric, bool mmap) {
 
     free(tOffsets);
     Uncompressed_Mem<vertex>* mem = new Uncompressed_Mem<vertex>(v,n,m,edges,inEdges);
-    return graph<vertex>(v,n,m,mem,offsets,(intE*)edges);
+    return graph<vertex>(v, n, m, mem, &v_offset, &v_edge);
   }
   else {
 //    free(offsets);
     Uncompressed_Mem<vertex>* mem = new Uncompressed_Mem<vertex>(v,n,m,edges);
-    return graph<vertex>(v,n,m,mem,offsets,(intE*)edges);
+    return graph<vertex>(v,n,m,mem,&v_offset, &v_edge);
   }
 }
 

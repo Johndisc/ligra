@@ -2,6 +2,8 @@
 #define GRAPH_H
 #include <iostream>
 #include <fstream>
+#include <utility>
+#include <vector>
 #include <stdlib.h>
 #include "vertex.h"
 #include "compressedVertex.h"
@@ -103,13 +105,15 @@ struct graph {
   bool transposed;
   uintE* flags;
   Deletable *D;
-  uintT* offsets;
-  intE* edges;
+  vector<int> *offsets;
+  vector<int> *edges;
 
-graph(vertex* _V, long _n, long _m, Deletable* _D, uintT* _offsets, intE* _edges) : V(_V), n(_n), m(_m),
-  D(_D), offsets(_offsets), edges(_edges), flags(NULL), transposed(0) {}
-
-graph(vertex* _V, long _n, long _m, Deletable* _D, uintE* _flags, uintT* _offsets, intE* _edges) : V(_V),
+graph(vertex* _V, long _n, long _m, Deletable* _D, vector<int> *_offsets, vector<int> *_edges) : V(_V), n(_n), m(_m),
+  D(_D), offsets(_offsets), edges(_edges), flags(NULL), transposed(0) {
+//    for (auto it = offsets->begin(); it != offsets->end(); it++)
+//        cout << *it << endl;
+}
+graph(vertex* _V, long _n, long _m, Deletable* _D, uintE* _flags, vector<int> *_offsets, vector<int> *_edges) : V(_V),
   n(_n), m(_m), D(_D), offsets(_offsets), edges(_edges), flags(_flags), transposed(0) {}
 
   void del() {
