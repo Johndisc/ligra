@@ -103,12 +103,14 @@ struct graph {
   bool transposed;
   uintE* flags;
   Deletable *D;
+  uintT* offsets;
+  intE* edges;
 
-graph(vertex* _V, long _n, long _m, Deletable* _D) : V(_V), n(_n), m(_m),
-  D(_D), flags(NULL), transposed(0) {}
+graph(vertex* _V, long _n, long _m, Deletable* _D, uintT* _offsets, intE* _edges) : V(_V), n(_n), m(_m),
+  D(_D), offsets(_offsets), edges(_edges), flags(NULL), transposed(0) {}
 
-graph(vertex* _V, long _n, long _m, Deletable* _D, uintE* _flags) : V(_V),
-  n(_n), m(_m), D(_D), flags(_flags), transposed(0) {}
+graph(vertex* _V, long _n, long _m, Deletable* _D, uintE* _flags, uintT* _offsets, intE* _edges) : V(_V),
+  n(_n), m(_m), D(_D), offsets(_offsets), edges(_edges), flags(_flags), transposed(0) {}
 
   void del() {
     if (flags != NULL) free(flags);

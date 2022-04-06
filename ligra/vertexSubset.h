@@ -222,7 +222,7 @@ struct vertexSubsetData<pbbs::empty> {
 
   S* s;
   bool* d;
-  size_t n, m;
+  size_t n, m;      //m：S大小，即vertexSubset子点集大小；n：D大小，即整张图的点集大小
   bool isDense;
 };
 

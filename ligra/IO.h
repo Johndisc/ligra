@@ -250,7 +250,7 @@ graph<vertex> readGraphFromFile(char* fname, bool isSymmetric, bool mmap) {
 #endif
       }
       }}
-    free(offsets);
+//    free(offsets);
 
 #ifndef WEIGHTED
 #ifndef LOWMEM
@@ -306,12 +306,12 @@ graph<vertex> readGraphFromFile(char* fname, bool isSymmetric, bool mmap) {
 
     free(tOffsets);
     Uncompressed_Mem<vertex>* mem = new Uncompressed_Mem<vertex>(v,n,m,edges,inEdges);
-    return graph<vertex>(v,n,m,mem);
+    return graph<vertex>(v,n,m,mem,offsets,(intE*)edges);
   }
   else {
-    free(offsets);
+//    free(offsets);
     Uncompressed_Mem<vertex>* mem = new Uncompressed_Mem<vertex>(v,n,m,edges);
-    return graph<vertex>(v,n,m,mem);
+    return graph<vertex>(v,n,m,mem,offsets,(intE*)edges);
   }
 }
 
@@ -450,19 +450,19 @@ graph<vertex> readGraphFromBinary(char* iFile, bool isSymmetric) {
     free(tOffsets);
 #ifndef WEIGHTED
     Uncompressed_Mem<vertex>* mem = new Uncompressed_Mem<vertex>(v,n,m,edges,inEdges);
-    return graph<vertex>(v,n,m,mem);
+    return graph<vertex>(v,n,m,mem,NULL,NULL);
 #else
     Uncompressed_Mem<vertex>* mem = new Uncompressed_Mem<vertex>(v,n,m,edgesAndWeights,inEdges);
-    return graph<vertex>(v,n,m,mem);
+    return graph<vertex>(v,n,m,mem,NULL,NULL);
 #endif
   }
   free(offsets);
 #ifndef WEIGHTED
   Uncompressed_Mem<vertex>* mem = new Uncompressed_Mem<vertex>(v,n,m,edges);
-  return graph<vertex>(v,n,m,mem);
+  return graph<vertex>(v,n,m,mem,NULL,NULL);
 #else
   Uncompressed_Mem<vertex>* mem = new Uncompressed_Mem<vertex>(v,n,m,edgesAndWeights);
-  return graph<vertex>(v,n,m,mem);
+  return graph<vertex>(v,n,m,mem,NULL,NULL);
 #endif
 }
 
@@ -552,6 +552,6 @@ graph<vertex> readCompressedGraph(char* fname, bool isSymmetric, bool mmap) {
   cout << "creating graph..."<<endl;
   Compressed_Mem<vertex>* mem = new Compressed_Mem<vertex>(V, s);
 
-  graph<vertex> G(V,n,m,mem);
+  graph<vertex> G(V,n,m,mem,NULL,NULL);
   return G;
 }
