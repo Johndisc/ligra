@@ -105,16 +105,24 @@ struct graph {
   bool transposed;
   uintE* flags;
   Deletable *D;
-  vector<int> *offsets;
-  vector<int> *edges;
+  vector<int> offsets;
+  vector<int> edges;
 
-graph(vertex* _V, long _n, long _m, Deletable* _D, vector<int> *_offsets, vector<int> *_edges) : V(_V), n(_n), m(_m),
-  D(_D), offsets(_offsets), edges(_edges), flags(NULL), transposed(0) {
-//    for (auto it = offsets->begin(); it != offsets->end(); it++)
-//        cout << *it << endl;
+graph(vertex* _V, long _n, long _m, Deletable* _D, int *_offsets, int *_edges) : V(_V), n(_n), m(_m),
+  D(_D), flags(NULL), transposed(0) {
+    vector<int> tempo(_offsets, _offsets + n);
+    offsets = tempo;
+    offsets.push_back(n);
+    vector<int> tempe(_edges, _edges + m);
+    edges = tempe;
 }
-graph(vertex* _V, long _n, long _m, Deletable* _D, uintE* _flags, vector<int> *_offsets, vector<int> *_edges) : V(_V),
-  n(_n), m(_m), D(_D), offsets(_offsets), edges(_edges), flags(_flags), transposed(0) {}
+graph(vertex* _V, long _n, long _m, Deletable* _D, uintE* _flags, int *_offsets, int *_edges) : V(_V),
+  n(_n), m(_m), D(_D), flags(_flags), transposed(0) {
+    vector<int> tempo(_offsets, _offsets + n);
+    offsets = tempo;
+    vector<int> tempe(_edges, _edges + m);
+    edges = tempe;
+}
 
   void del() {
     if (flags != NULL) free(flags);

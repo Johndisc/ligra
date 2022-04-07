@@ -67,15 +67,19 @@ vertexSubsetData<data> edgeMapDense(graph<vertex> GA, VS &vertexSubset, F &f, co
     if (should_output(fl)) {
         D *next = newA(D, n);
         auto g = get_emdense_gen<data>(next);
-//        cout << GA.offsets->size() << " " << GA.edges->size() << endl;
-//        for (auto ea = GA.offsets->begin(); ea != GA.offsets->end(); ea++) {
-//            cout << *ea << endl;
-//        }
-//        parallel_for (int i = 0; i < 16; i++) {
-
-//            hats_config(GA.offsets, GA.edges, NULL, NULL, true, i * n / 16,
-//                        (i + 1) * n / 16 > n ? n : (i + 1) * n / 16);
-//        }
+        vector<bool> active(n, true);
+        int cnt = 0;
+        parallel_for (int i = 0; i < 16; i++) {
+            hats_bdfs_configure(&GA.offsets, &GA.edges, NULL, &active, true, i * (n + 15) / 16,
+                                (i + 1) * (n + 15) / 16 > n ? n : (i + 1) * (n + 15) / 16);
+            Edge edge(0, 0);
+            while (edge.u != -1 && edge.v != -1) {
+                edge = hats_bdfs_fetch_edge();
+                cnt++;
+            }
+            cnt--;
+            cout << "i=" << i << " " << cnt << endl;
+        }
         parallel_for (long v = 0; v < n; v++) {
             std::get<0>(next[v]) = 0;
             if (f.cond(v)) {
