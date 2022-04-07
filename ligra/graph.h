@@ -112,7 +112,7 @@ graph(vertex* _V, long _n, long _m, Deletable* _D, int *_offsets, int *_edges) :
   D(_D), flags(NULL), transposed(0) {
     vector<int> tempo(_offsets, _offsets + n);
     offsets = tempo;
-    offsets.push_back(n);
+    offsets.push_back(m);
     vector<int> tempe(_edges, _edges + m);
     edges = tempe;
 }
@@ -120,6 +120,7 @@ graph(vertex* _V, long _n, long _m, Deletable* _D, uintE* _flags, int *_offsets,
   n(_n), m(_m), D(_D), flags(_flags), transposed(0) {
     vector<int> tempo(_offsets, _offsets + n);
     offsets = tempo;
+    offsets.push_back(m);
     vector<int> tempe(_edges, _edges + m);
     edges = tempe;
 }

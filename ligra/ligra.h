@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include <string>
+#include <set>
 #include <algorithm>
 #include "parallel.h"
 #include "gettime.h"
@@ -68,17 +69,43 @@ vertexSubsetData<data> edgeMapDense(graph<vertex> GA, VS &vertexSubset, F &f, co
         D *next = newA(D, n);
         auto g = get_emdense_gen<data>(next);
         vector<bool> active(n, true);
-        int cnt = 0;
+        set<int> visited;
         parallel_for (int i = 0; i < 16; i++) {
             hats_bdfs_configure(&GA.offsets, &GA.edges, NULL, &active, true, i * (n + 15) / 16,
                                 (i + 1) * (n + 15) / 16 > n ? n : (i + 1) * (n + 15) / 16);
             Edge edge(0, 0);
-            while (edge.u != -1 && edge.v != -1) {
+            while (true) {
                 edge = hats_bdfs_fetch_edge();
-                cnt++;
+                if (edge.u == -1 || edge.v == -1)
+                    break;
+                if (visited.find(edge.u) != visited.end())
+                    continue;
+                visited.insert(edge.u);
+                std::get<0>(next[edge.u]) = 0;
+                if (f.cond(edge.u)) {
+                    G[edge.u].decodeInNghBreakEarly(edge.u, vertexSubset, f, g, fl & dense_parallel);
+                }
+//                if (f.cond(edge.u)) {
+//                    if (vertexSubset.isIn(edge.v)) {
+//#ifndef WEIGHTED
+//                        auto m = f.update((uintE)edge.v, (uintE)edge.u);
+//#else
+//                        auto m = f.update((uintE)edge.v, (uintE)edge.u, 1);
+//#endif
+//                        g(edge.u, m);
+//                    }
+//                }
+//                if (f.cond(edge.v)) {
+//                    if (vertexSubset.isIn(edge.u)) {
+//#ifndef WEIGHTED
+//                        auto m = f.update((uintE)edge.u, (uintE)edge.v);
+//#else
+//                        auto m = f.update((uintE)edge.v, (uintE)edge.u, 1);
+//#endif
+//                        g(edge.v, m);
+//                    }
+//                }
             }
-            cnt--;
-            cout << "i=" << i << " " << cnt << endl;
         }
         parallel_for (long v = 0; v < n; v++) {
             std::get<0>(next[v]) = 0;
@@ -556,6 +583,7 @@ int parallel_main(int argc, char *argv[]) {
               readHypergraph<symmetricVertex>(iFile,compressed,symmetric,binary,mmap); //symmetric graph
 #endif
             Compute(G, P);
+            cout << "first round finish" << endl;
             for (int r = 0; r < rounds; r++) {
                 startTime();
                 Compute(G, P);

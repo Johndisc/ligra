@@ -67,10 +67,11 @@ void Compute(graph<vertex>& GA, commandLine P) {
   Visited[start/64] = (long)1 << (start % 64);
   vertexSubset Frontier(n,start); //creates initial frontier
   while(!Frontier.isEmpty()){ //loop until frontier is empty
-    vertexSubset output = edgeMap(GA,Frontier,BFS_F(Parents,Visited));    
+    vertexSubset output = edgeMap(GA,Frontier,BFS_F(Parents,Visited));
     Frontier.del();
-    Frontier = output; //set new frontier
-  } 
+      Frontier = output; //set new frontier
+      cout << "compute once  " << output.size() << endl;
+  }
   Frontier.del();
   free(Parents); free(Visited);
 }
