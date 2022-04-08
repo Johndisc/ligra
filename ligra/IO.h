@@ -202,6 +202,7 @@ graph<vertex> readGraphFromFile(char* fname, bool isSymmetric, bool mmap) {
   }
 
   uintT* offsets = newA(uintT,n);
+  uintE* neighbors = newA(uintE, m);
 #ifndef WEIGHTED
   uintE* edges = newA(uintE,m);
 #else
@@ -210,6 +211,7 @@ graph<vertex> readGraphFromFile(char* fname, bool isSymmetric, bool mmap) {
 
   {parallel_for(long i=0; i < n; i++) offsets[i] = atol(W.Strings[i + 3]);}
   {parallel_for(long i=0; i<m; i++) {
+      neighbors[i] = atol(W.Strings[i + n + 3]);
 #ifndef WEIGHTED
       edges[i] = atol(W.Strings[i+n+3]);
 #else
@@ -306,12 +308,12 @@ graph<vertex> readGraphFromFile(char* fname, bool isSymmetric, bool mmap) {
 
     free(tOffsets);
     Uncompressed_Mem<vertex>* mem = new Uncompressed_Mem<vertex>(v,n,m,edges,inEdges);
-    return graph<vertex>(v, n, m, mem, (int*)offsets, (int*)edges);
+    return graph<vertex>(v, n, m, mem, (int*)offsets, (int*)neighbors);
   }
   else {
 //    free(offsets);
     Uncompressed_Mem<vertex>* mem = new Uncompressed_Mem<vertex>(v,n,m,edges);
-    return graph<vertex>(v,n,m,mem,(int*)offsets, (int*)edges);
+    return graph<vertex>(v,n,m,mem,(int*)offsets, (int*)neighbors);
   }
 }
 
