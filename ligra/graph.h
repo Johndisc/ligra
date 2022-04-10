@@ -107,22 +107,33 @@ struct graph {
   Deletable *D;
   vector<int> offsets;
   vector<int> edges;
+  vector<int> values;
 
-graph(vertex* _V, long _n, long _m, Deletable* _D, int *_offsets, int *_edges) : V(_V), n(_n), m(_m),
+graph(vertex* _V, long _n, long _m, Deletable* _D, int *_offsets, int *_edges, int *_values) : V(_V), n(_n), m(_m),
   D(_D), flags(NULL), transposed(0) {
     vector<int> tempo(_offsets, _offsets + n);
     offsets = tempo;
     offsets.push_back(m);
     vector<int> tempe(_edges, _edges + m);
     edges = tempe;
+    if (_values)
+    {
+        vector<int> tempv(_values, _values + m);
+        values = tempv;
+    }
 }
-graph(vertex* _V, long _n, long _m, Deletable* _D, uintE* _flags, int *_offsets, int *_edges) : V(_V),
+graph(vertex* _V, long _n, long _m, Deletable* _D, uintE* _flags, int *_offsets, int *_edges, int *_values) : V(_V),
   n(_n), m(_m), D(_D), flags(_flags), transposed(0) {
     vector<int> tempo(_offsets, _offsets + n);
     offsets = tempo;
     offsets.push_back(m);
     vector<int> tempe(_edges, _edges + m);
     edges = tempe;
+    if (_values)
+    {
+        vector<int> tempv(_values, _values + m);
+        values = tempv;
+    }
 }
 
   void del() {

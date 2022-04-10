@@ -68,29 +68,48 @@ vertexSubsetData<data> edgeMapDense(graph<vertex> GA, VS &vertexSubset, F &f, co
     if (should_output(fl)) {
         D *next = newA(D, n);
         auto g = get_emdense_gen<data>(next);
-//        vector<bool> active(n, true);
-//        parallel_for (long v = 0; v < n; v++) {
-//            std::get<0>(next[v]) = 0;
-//        }
-//        parallel_for (int i = 0; i < 16; i++) {
-//            hats_bdfs_configure(&GA.offsets, &GA.edges, NULL, &active, true, i * (n + 15) / 16,
-//                                (i + 1) * (n + 15) / 16 > n ? n : (i + 1) * (n + 15) / 16);
-//            Edge edge(0, 0);
-//            while (true) {
-//                edge = hats_bdfs_fetch_edge();
-//                if (edge.u == -1)
-//                    break;
-//
-//                if (f.cond(edge.u))
-//                    G[edge.u].decodeInNghBreakEarly(edge.u, vertexSubset, f, g, fl & dense_parallel);
-//            }
-//        }
+        vector<bool> active(n, true);
         parallel_for (long v = 0; v < n; v++) {
             std::get<0>(next[v]) = 0;
-            if (f.cond(v)) {
-                G[v].decodeInNghBreakEarly(v, vertexSubset, f, g, fl & dense_parallel);
+        }
+        parallel_for (int i = 0; i < 16; i++) {
+            hats_bdfs_configure(&GA.offsets, &GA.edges, NULL, &active, true, i * (n + 15) / 16,
+                                (i + 1) * (n + 15) / 16 > n ? n : (i + 1) * (n + 15) / 16, i);
+            Edge edge(0, 0);
+            while (true) {
+                edge = hats_bdfs_fetch_edge(i);
+                if (edge.u == -1)
+                    break;
+
+                if (vertexSubset.isIn(edge.v)) {
+#ifndef WEIGHTED
+                    auto m = f.updateAtomic(edge.v, edge.u);
+#else
+                    auto m = f.updateAtomic(edge.v, edge.u, edge.data);
+#endif
+                    g(edge.u, m);
+                }
+                if (is_same<vertex, symmetricVertex>::value || is_same<vertex, compressedSymmetricVertex>::value) {
+                    if (vertexSubset.isIn(edge.u)) {
+#ifndef WEIGHTED
+                        auto m = f.updateAtomic(edge.u, edge.v);
+#else
+                        auto m = f.updateAtomic(edge.u, edge.v, edge.data);
+#endif
+                        g(edge.v, m);
+                    }
+                }
+
+//                if (f.cond(edge.u))
+//                    G[edge.u].decodeInNghBreakEarly(edge.u, vertexSubset, f, g, fl & dense_parallel);
             }
         }
+//        parallel_for (long v = 0; v < n; v++) {
+//            std::get<0>(next[v]) = 0;
+//            if (f.cond(v)) {
+//                G[v].decodeInNghBreakEarly(v, vertexSubset, f, g, fl & dense_parallel);
+//            }
+//        }
         return vertexSubsetData<data>(n, next);
     } else {
         auto g = get_emdense_nooutput_gen<data>();
@@ -105,6 +124,7 @@ vertexSubsetData<data> edgeMapDense(graph<vertex> GA, VS &vertexSubset, F &f, co
 
 template<class data, class vertex, class VS, class F>
 vertexSubsetData<data> edgeMapDenseForward(graph<vertex> GA, VS &vertexSubset, F &f, const flags fl) {
+    cout << "dense forward" << endl;
     using D = tuple<bool, data>;
     long n = GA.n;
     vertex *G = GA.V;
@@ -132,6 +152,7 @@ vertexSubsetData<data> edgeMapDenseForward(graph<vertex> GA, VS &vertexSubset, F
 template<class data, class vertex, class VS, class F>
 vertexSubsetData<data> edgeMapSparse(graph<vertex> &GA, vertex *frontierVertices, VS &indices,
                                      uintT *degrees, uintT m, F &f, const flags fl) {
+    cout << "edgeMapSparse" << endl;
     using S = tuple<uintE, data>;
     long n = indices.n;
     S *outEdges;
@@ -179,6 +200,7 @@ template<class data, class vertex, class VS, class F>
 vertexSubsetData<data> edgeMapSparse_no_filter(graph<vertex> &GA,
                                                vertex *frontierVertices, VS &indices, uintT *offsets, uintT m, F &f,
                                                const flags fl) {
+    cout << "edgeMapSparse_no_filter" << endl;
     using S = tuple<uintE, data>;
     long n = indices.n;
     long outEdgeCount = sequence::plusScan(offsets, offsets, m);
@@ -575,6 +597,7 @@ int parallel_main(int argc, char *argv[]) {
             hypergraph<asymmetricVertex> G =
               readHypergraph<asymmetricVertex>(iFile,compressed,symmetric,binary,mmap); //asymmetric graph
 #endif
+            cout << "start" << endl;
             Compute(G, P);
             if (G.transposed) G.transpose();
             for (int r = 0; r < rounds; r++) {
