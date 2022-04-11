@@ -50,6 +50,9 @@ struct BFS_F {
   //cond function checks if vertex has been visited yet
   inline bool cond (uintE d) { 
     return (!(Visited[d/64] & ((long)1 << (d % 64)))); }
+  inline int* getVertexData() {
+    return (int*)Parents;
+  }
 };
 
 template <class vertex>

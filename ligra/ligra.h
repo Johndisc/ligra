@@ -73,7 +73,7 @@ vertexSubsetData<data> edgeMapDense(graph<vertex> GA, VS &vertexSubset, F &f, co
             std::get<0>(next[v]) = 0;
         }
         parallel_for (int i = 0; i < 16; i++) {
-            hats_bdfs_configure(&GA.offsets, &GA.edges, NULL, &active, true, i * (n + 15) / 16,
+            hats_bdfs_configure(&GA.offsets, &GA.edges, NULL, f.getVertexData(), &active, true, i * (n + 15) / 16,
                                 (i + 1) * (n + 15) / 16 > n ? n : (i + 1) * (n + 15) / 16, i);
             Edge edge(0, 0);
             while (true) {
@@ -152,7 +152,7 @@ vertexSubsetData<data> edgeMapDenseForward(graph<vertex> GA, VS &vertexSubset, F
 template<class data, class vertex, class VS, class F>
 vertexSubsetData<data> edgeMapSparse(graph<vertex> &GA, vertex *frontierVertices, VS &indices,
                                      uintT *degrees, uintT m, F &f, const flags fl) {
-    cout << "edgeMapSparse" << endl;
+//    cout << "edgeMapSparse" << endl;
     using S = tuple<uintE, data>;
     long n = indices.n;
     S *outEdges;

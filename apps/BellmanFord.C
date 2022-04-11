@@ -43,6 +43,9 @@ struct BF_F {
 	    CAS(&Visited[d],0,1));
   }
   inline bool cond (uintE d) { return cond_true(d); }
+  inline int* getVertexData() {
+    return (int*)ShortestPathLen;
+  }
 };
 
 //reset visited vertices

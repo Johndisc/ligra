@@ -40,7 +40,10 @@ struct BFS_F {
     return (CAS(&Parents[d],UINT_E_MAX,label));
   }
   //cond function checks if vertex has been visited yet
-  inline bool cond (uintE d) { return (Parents[d] == UINT_E_MAX); } 
+  inline bool cond (uintE d) { return (Parents[d] == UINT_E_MAX); }
+    inline int* getVertexData() {
+        return (int*)Parents;
+    }
 };
 
 template <class vertex>

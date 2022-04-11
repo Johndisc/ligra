@@ -44,6 +44,9 @@ struct BC_F {
     return oldV == 0.0;
   }
   inline bool cond (uintE d) { return Visited[d] == 0; } //check if visited
+    inline int* getVertexData() {
+        return (int*)NumPaths;
+    }
 };
 
 struct BC_Back_F {
@@ -65,6 +68,9 @@ struct BC_Back_F {
     return oldV == 0.0;
   }
   inline bool cond (uintE d) { return Visited[d] == 0; } //check if visited
+    inline int* getVertexData() {
+        return (int*)Dependencies;
+    }
 };
 
 //vertex map function to mark visited vertexSubset

@@ -59,7 +59,11 @@ struct CF_Edge_F {
     //not needed as we will always do pull based
     return update(s,d,edgeLen);
   }
-  inline bool cond (intT d) { return cond_true(d); }};
+  inline bool cond (intT d) { return cond_true(d); }
+    inline int* getVertexData() {
+        return (int*)latent_curr;
+    }
+};
 
 struct CF_Vertex_F {
   double step, lambda;
