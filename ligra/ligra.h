@@ -43,6 +43,7 @@
 #include "index_map.h"
 #include "edgeMap_utils.h"
 #include "/home/jzh/zsim_en/zsim/src/HATS/BDFS.h"
+#include "/home/jzh/zsim_en/zsim/src/HATS/VO.h"
 
 using namespace std;
 
