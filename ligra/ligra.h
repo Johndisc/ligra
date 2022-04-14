@@ -598,7 +598,6 @@ int parallel_main(int argc, char *argv[]) {
             hypergraph<asymmetricVertex> G =
               readHypergraph<asymmetricVertex>(iFile,compressed,symmetric,binary,mmap); //asymmetric graph
 #endif
-            cout << "start" << endl;
             Compute(G, P);
             if (G.transposed) G.transpose();
             for (int r = 0; r < rounds; r++) {
