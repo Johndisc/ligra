@@ -70,6 +70,8 @@ vertexSubsetData<data> edgeMapDense(graph<vertex> GA, VS &vertexSubset, F &f, co
         D *next = newA(D, n);
         auto g = get_emdense_gen<data>(next);
         vector<bool> active(n, true);
+        for (int i = 0; i < n; ++i)
+            active[i] = f.cond(i);
         parallel_for (long v = 0; v < n; v++) {
             std::get<0>(next[v]) = 0;
         }
