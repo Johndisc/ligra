@@ -30,6 +30,7 @@
 #include <cstring>
 #include <string>
 #include <set>
+#include <map>
 #include <algorithm>
 #include "parallel.h"
 #include "gettime.h"
@@ -83,28 +84,30 @@ vertexSubsetData<data> edgeMapDense(graph<vertex> GA, VS &vertexSubset, F &f, co
                 edge = hats_bdfs_fetch_edge(i);
                 if (edge.u == -1)
                     break;
+//                if (!f.cond(edge.u))
+//                    continue;
+//
+//                if (vertexSubset.isIn(edge.v)) {
+//#ifndef WEIGHTED
+//                    auto m = f.updateAtomic(edge.v, edge.u);
+//#else
+//                    auto m = f.updateAtomic(edge.v, edge.u, edge.data);
+//#endif
+//                    g(edge.u, m);
+//                }
+//                if (is_same<vertex, symmetricVertex>::value || is_same<vertex, compressedSymmetricVertex>::value) {
+//                    if (vertexSubset.isIn(edge.u)) {
+//#ifndef WEIGHTED
+//                        auto m = f.updateAtomic(edge.u, edge.v);
+//#else
+//                        auto m = f.updateAtomic(edge.u, edge.v, edge.data);
+//#endif
+//                        g(edge.v, m);
+//                    }
+//                }
 
-                if (vertexSubset.isIn(edge.v)) {
-#ifndef WEIGHTED
-                    auto m = f.updateAtomic(edge.v, edge.u);
-#else
-                    auto m = f.updateAtomic(edge.v, edge.u, edge.data);
-#endif
-                    g(edge.u, m);
-                }
-                if (is_same<vertex, symmetricVertex>::value || is_same<vertex, compressedSymmetricVertex>::value) {
-                    if (vertexSubset.isIn(edge.u)) {
-#ifndef WEIGHTED
-                        auto m = f.updateAtomic(edge.u, edge.v);
-#else
-                        auto m = f.updateAtomic(edge.u, edge.v, edge.data);
-#endif
-                        g(edge.v, m);
-                    }
-                }
-
-//                if (f.cond(edge.u))
-//                    G[edge.u].decodeInNghBreakEarly(edge.u, vertexSubset, f, g, fl & dense_parallel);
+                if (f.cond(edge.u))
+                    G[edge.u].decodeInNghBreakEarly(edge.u, vertexSubset, f, g, fl & dense_parallel);
             }
         }
 //        parallel_for (long v = 0; v < n; v++) {
@@ -165,7 +168,30 @@ vertexSubsetData<data> edgeMapSparse(graph<vertex> &GA, vertex *frontierVertices
         uintT *offsets = degrees;
         outEdgeCount = sequence::plusScan(offsets, offsets, m);
         outEdges = newA(S, outEdgeCount);
+        //在outEdges中填入数据使其转化为子图的CSR的neighbor数组
         auto g = get_emsparse_gen<data>(outEdges);
+//
+//        vector<bool> active(n, false);
+//        map<uintT, int> vmap;
+//        parallel_for (int i = 0; i < m; ++i) {
+//            active[indices.vtx(i)] = true;
+//            vmap[indices.vtx(i)] = i;
+//        }
+//        parallel_for (int i = 0; i < 16; i++) {
+//            hats_bdfs_configure(&GA.offsets, &GA.edges, NULL, f.getVertexData(), &active, true, i * (n + 15) / 16,
+//                                (i + 1) * (n + 15) / 16 > n ? n : (i + 1) * (n + 15) / 16, i);
+//            Edge edge(0, 0);
+//            while (true) {
+//                edge = hats_bdfs_fetch_edge(i);
+//                if (edge.u == -1)
+//                    break;
+//
+//                uintT o = offsets[vmap[edge.u]];
+//                vertex vert = frontierVertices[vmap[edge.u]];
+//                vert.decodeOutNghSparse(edge.u, o, f, g);
+//            }
+//        }
+
         parallel_for (size_t i = 0; i < m; i++) {
             uintT v = indices.vtx(i), o = offsets[i];
             vertex vert = frontierVertices[i];
@@ -191,6 +217,7 @@ vertexSubsetData<data> edgeMapSparse(graph<vertex> &GA, vertex *frontierVertices
             remDuplicates(get_key, GA.flags, outEdgeCount, n);
         }
         auto p = [](tuple<uintE, data> &v) { return std::get<0>(v) != UINT_E_MAX; };
+        //过滤掉UINT_E_MAX的，nextIndices为过滤后的S*结果，nextM为过滤后的数量
         size_t nextM = pbbs::filterf(outEdges, nextIndices, outEdgeCount, p);
         free(outEdges);
         return vertexSubsetData<data>(n, nextM, nextIndices);
@@ -291,7 +318,9 @@ vertexSubsetData<data> edgeMapData(graph<vertex> &GA, VS &vs, F f,
         abort();
     }
     if (m == 0) return vertexSubsetData<data>(numVertices);
+    //degree中储存储存VS中所有点的出度
     uintT *degrees = NULL;
+    //frontierVertices中储存VS中所有点的vertex数据
     vertex *frontierVertices = NULL;
     uintT outDegrees = 0;
     if (threshold > 0) { //compute sum of out-degrees if threshold > 0
