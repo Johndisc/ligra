@@ -76,6 +76,7 @@ vertexSubsetData<data> edgeMapDense(graph<vertex> GA, VS &vertexSubset, F &f, co
         parallel_for (long v = 0; v < n; v++) {
             std::get<0>(next[v]) = 0;
         }
+        int lastu = 0, cnt = 0;
         parallel_for (int i = 0; i < 16; i++) {
             hats_bdfs_configure(&GA.offsets, &GA.edges, NULL, f.getVertexData(), &active, true, i * (n + 15) / 16,
                                 (i + 1) * (n + 15) / 16 > n ? n : (i + 1) * (n + 15) / 16, i);
@@ -106,10 +107,21 @@ vertexSubsetData<data> edgeMapDense(graph<vertex> GA, VS &vertexSubset, F &f, co
 //                    }
 //                }
 
-                if (f.cond(edge.u))
+                if (f.cond(edge.u)) {
                     G[edge.u].decodeInNghBreakEarly(edge.u, vertexSubset, f, g, fl & dense_parallel);
+//                    uintE d = G[edge.u].getOutDegree();
+//                    for (size_t j=0; j<d; j++) {
+//                        uintE ngh = G[edge.u].getOutNeighbor(j);
+//                        if (ngh==lastu) {
+//                            cnt++;
+//                            break;
+//                        }
+//                    }
+                }
+                lastu = edge.u;
             }
         }
+        cout << "neighbor: " << cnt << "  total: " << n << endl;
 //        parallel_for (long v = 0; v < n; v++) {
 //            std::get<0>(next[v]) = 0;
 //            if (f.cond(v)) {
