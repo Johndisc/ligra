@@ -76,9 +76,12 @@ vertexSubsetData<data> edgeMapDense(graph<vertex> GA, VS &vertexSubset, F &f, co
         parallel_for (long v = 0; v < n; v++) {
             std::get<0>(next[v]) = 0;
         }
-        int lastu = 0, cnt = 0;
+        int cnt = 0,lastu=0,acn=0;
+        for (int i = 0; i < n; ++i)
+            if (active[i])
+                acn++;
         parallel_for (int i = 0; i < 16; i++) {
-            hats_bdfs_configure(&GA.offsets, &GA.edges, NULL, f.getVertexData(), &active, true, i * (n + 15) / 16,
+            hats_bdfs_configure(&GA.offsets, &GA.edges, NULL, f.getVertexData(), &active, false, i * (n + 15) / 16,
                                 (i + 1) * (n + 15) / 16 > n ? n : (i + 1) * (n + 15) / 16, i);
             Edge edge(0, 0);
             while (true) {
@@ -110,18 +113,18 @@ vertexSubsetData<data> edgeMapDense(graph<vertex> GA, VS &vertexSubset, F &f, co
                 if (f.cond(edge.u)) {
                     G[edge.u].decodeInNghBreakEarly(edge.u, vertexSubset, f, g, fl & dense_parallel);
 //                    uintE d = G[edge.u].getOutDegree();
-//                    for (size_t j=0; j<d; j++) {
+//                    for (size_t j = 0; j < d; j++) {
 //                        uintE ngh = G[edge.u].getOutNeighbor(j);
-//                        if (ngh==lastu) {
+//                        if (ngh == lastu) {
 //                            cnt++;
 //                            break;
 //                        }
 //                    }
+//                    lastu = edge.u;
                 }
-                lastu = edge.u;
             }
         }
-        cout << "neighbor: " << cnt << "  total: " << n << endl;
+//        cout <<"totoal: " << acn << "  "<< "neighbor: " << cnt << " ratio: " << (double) cnt / acn << endl;
 //        parallel_for (long v = 0; v < n; v++) {
 //            std::get<0>(next[v]) = 0;
 //            if (f.cond(v)) {
@@ -182,33 +185,44 @@ vertexSubsetData<data> edgeMapSparse(graph<vertex> &GA, vertex *frontierVertices
         outEdges = newA(S, outEdgeCount);
         //在outEdges中填入数据使其转化为子图的CSR的neighbor数组
         auto g = get_emsparse_gen<data>(outEdges);
-//
-//        vector<bool> active(n, false);
-//        map<uintT, int> vmap;
-//        parallel_for (int i = 0; i < m; ++i) {
-//            active[indices.vtx(i)] = true;
-//            vmap[indices.vtx(i)] = i;
-//        }
-//        parallel_for (int i = 0; i < 16; i++) {
-//            hats_bdfs_configure(&GA.offsets, &GA.edges, NULL, f.getVertexData(), &active, true, i * (n + 15) / 16,
-//                                (i + 1) * (n + 15) / 16 > n ? n : (i + 1) * (n + 15) / 16, i);
-//            Edge edge(0, 0);
-//            while (true) {
-//                edge = hats_bdfs_fetch_edge(i);
-//                if (edge.u == -1)
-//                    break;
-//
-//                uintT o = offsets[vmap[edge.u]];
-//                vertex vert = frontierVertices[vmap[edge.u]];
-//                vert.decodeOutNghSparse(edge.u, o, f, g);
-//            }
-//        }
 
-        parallel_for (size_t i = 0; i < m; i++) {
-            uintT v = indices.vtx(i), o = offsets[i];
-            vertex vert = frontierVertices[i];
-            vert.decodeOutNghSparse(v, o, f, g);
+        int lastu = 0, cnt = 0;
+        vector<bool> active(n, false);
+        map<uintT, int> vmap;
+        parallel_for (int i = 0; i < m; ++i) {
+            active[indices.vtx(i)] = true;
+            vmap[indices.vtx(i)] = i;
         }
+        parallel_for (int i = 0; i < 16; i++) {
+            hats_bdfs_configure(&GA.offsets, &GA.edges, NULL, f.getVertexData(), &active, true, i * (n + 15) / 16,
+                                (i + 1) * (n + 15) / 16 > n ? n : (i + 1) * (n + 15) / 16, i);
+            Edge edge(0, 0);
+            while (true) {
+                edge = hats_bdfs_fetch_edge(i);
+                if (edge.u == -1)
+                    break;
+
+                uintT o = offsets[vmap[edge.u]];
+                vertex vert = frontierVertices[vmap[edge.u]];
+                vert.decodeOutNghSparse(edge.u, o, f, g);
+
+//                uintE d = vert.getInDegree();
+//                for (size_t j=0; j<d; j++) {
+//                    uintE ngh = vert.getInNeighbor(j);
+//                    if (ngh==lastu) {
+//                        cnt++;
+//                        break;
+//                    }
+//                }
+//                lastu = edge.u;
+            }
+        }
+//        cout << "neighbor: " << cnt << "  total: " << m << "  ratio: " << (double) cnt / m << endl;
+//        parallel_for (size_t i = 0; i < m; i++) {
+//            uintT v = indices.vtx(i), o = offsets[i];
+//            vertex vert = frontierVertices[i];
+//            vert.decodeOutNghSparse(v, o, f, g);
+//        }
     } else {
         auto g = get_emsparse_nooutput_gen<data>();
         parallel_for (size_t i = 0; i < m; i++) {
